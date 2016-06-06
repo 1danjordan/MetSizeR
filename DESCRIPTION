@@ -1,12 +1,15 @@
 Package: MetSizeR
 Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1.0
+Title: Estimating Sample Sizes for Metabolomic Experiments
+Version: 1.2
 Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
+Description: An easy to use Graphical User Interface for estimating sample sizes required for metabolomic experiments even when experimental pilot data is not available.
+License: GPL (>= 2)
 LazyData: TRUE
 Imports:
-  dplyr,
-  purrr
+  purrr,
+  mvtnorm,
+  MetabolAnalyze
 Suggests: testthat
+URL: http://github.com/dandermotj/MetSizeR
+BugReports: http://github.com/dandermotj/MetSizeR/issues
