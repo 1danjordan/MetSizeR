@@ -7,9 +7,9 @@ Description: An easy to use Graphical User Interface for estimating sample sizes
 License: GPL (>= 2)
 LazyData: TRUE
 Imports:
-  purrr,
-  mvtnorm,
-  MetabolAnalyze
+    purrr,
+    mvtnorm,
+    MetabolAnalyze
 Suggests: testthat
 URL: http://github.com/dandermotj/MetSizeR
 BugReports: http://github.com/dandermotj/MetSizeR/issues
