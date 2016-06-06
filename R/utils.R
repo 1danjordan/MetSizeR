@@ -52,12 +52,31 @@ partition <- function(df, n, probs) {
 
 #' Sample from the null distribution
 #'
+#' Computes pooled standard deviations and means
+#' from simulated samples
 #'
+#' @param x a numeric dataframe
+#' @param n_sims number of simulations
+#' @param n1 number of samples in treatment A
+#' @param n2 number of samples in treatment B
+#'
+#' @example
+#' # simulate 100 split samples of the iris dataset
+#' and compute
+#' sample_dist(iris[-5], 100, 10, 9, 3)
 
-sample_dist <- function(x, n_sims, n1, n2){
+sample_dist <- function(x, n_sims, n1, n2, conf_idx){
+
   probs <- c(A = n1, B = n2)
 
-  partition(x, n_sims, probs) %>% transmutate(
-    sd = map2(A, B, ~  sqrt((1/n1 + 1/n2) * ((n1 - 1)*diag(var(.x)) + (n2 - 1)*diag(var(.y))) / (n1 + n2 - 2)))
-  )
+  partition(x, n_sims, probs) %>% mutate(
+
+    # TODO: break corrected_sd into a named function
+    pooled_sd = map2(A, B, ~ sqrt((1/n1 + 1/n2) * ((n1 - 1)*diag(var(.x)) + (n2 - 1)*diag(var(.y))) / (n1 + n2 - 2))),
+    corrected_sd = map(pooled_sd, ~ .x + sort(.x)[conf_idx]),
+
+    # TODO: use pmap to compute TS directly
+    mean_diff = map2(A, B, ~ colMeans(.x) - colMeans(.y)),
+    TS = map2(mean_diff, pooled_sd, ~ .x / .y)
+  ) %>% select(corrected_sd, TS)
 }
