@@ -59,7 +59,8 @@
 # any of them refer to or their meaning really so I'm just trying
 # to back track them and simplify from there
 
-sim_DPPCA_data_with_pilot <- function(){
+sim_DPPCA_data_with_pilot <- function(n, n_pilot_vars,
+                                      n_latent_dims){
 
   v              <- 0.1                 # v2.true
   phi            <- 0.8                 # phi.true
@@ -68,24 +69,27 @@ sim_DPPCA_data_with_pilot <- function(){
                                         # distribution of the variance.
   mu <- rep(0, n_latent_dims)           # zero vector for rmvnorm mean arg
 
+  # Helper function for setting sigma for rmvnorm
+  sigma_mat <- function(.x) {diag(.x, n_latent_dims)}
+
   # SV model on the errors
-  eta_sd   <- sqrt(v / (1 - phi^2))                 # eta.sd
-  # a square matrix with values only on the diagonal
-  eta_sc_sd <- eta_sd %>% diag(n_latent_dims)
+  eta_sd   <- sqrt(v / (1 - phi^2))     # eta.sd
 
+  u_sigma <- rmvnorm(1, mu, sigma_mat(eta_sd)) %>%
+    sigma_mat()
 
-  u_sigma <- rmvnorm(1, mu, eta_sc_sd) %>% diag(n_latent_dims)
-  u <- rmvnorm(n, mu, diag(eta_sc_true, n_latent_dims))
+  u <- rmvnorm(n, mu, u_sigma)
 
   # TODO: There's definitely something fishy with passing
   # the vector b into rgamma().
 
-  b <- c(0.5 * (alpha_sigma - 1), 0.25 * (alpha_sigma - 1)) # bo
-  w_sigma <- 1 / rgamma(n_latent_dims, alpha_sigma, b) %>% diag(n_latent_dims)
+  b <- c(0.5 * (alpha_sigma - 1), 0.25 * (alpha_sigma - 1))
+  w_sigma <- 1 / rgamma(n_latent_dims, alpha_sigma, b) %>% sigma_mat()
+
   w <- rmvnorm(n_pilot_vars, mu, w_sigma)
 
 
-  x_sigma <- rnorm(1, 0, eta_sd) %>% exp() %>% diag(n_latent_dims)
+  x_sigma <- exp(rnorm(1, 0, eta_sd)) %>% simga_mat()
   x <- rmvnorm(n, mu, x_sigma) + tcrossprod(u, w)
 
   return(x)
