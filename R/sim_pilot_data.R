@@ -55,42 +55,44 @@
    return(x)
  }
 
-# The variable names are a total mess and I don't know what
-# any of them refer to or their meaning really so I'm just trying
-# to back track them and simplify from there
+#' Simulate data for DPPCA when pilot data is present
+#'
+#' @param n              number of samples to be simulated
+#' @param n_pilot_vars   number of variables in the pilot data
+#' @param n_latent_dims  number of latent dimension
 
 sim_DPPCA_data_with_pilot <- function(n, n_pilot_vars,
                                       n_latent_dims){
 
-  v              <- 0.1                 # v2.true
-  phi            <- 0.8                 # phi.true
-  alpha_sigma    <- 5                   # ao | alpha.sigma <- ao <- 5
-                                        # the scale parameter of the prior
-                                        # distribution of the variance.
-  mu <- rep(0, n_latent_dims)           # zero vector for rmvnorm mean arg
+  v       <- 0.1                       # v2.true
+  phi     <- 0.8                       # phi.true
+  mu      <- rep(0, n_latent_dims)     # zero vector for rmvnorm mean arg
+  eta_sd  <- sqrt(v / (1 - phi^2))     # eta.sd | SV model on the errors
+  alpha_sigma    <- 5                  # ao | alpha.sigma <- ao <- 5
+                                       # the scale parameter of the prior
+                                       # distribution of the variance.
 
   # Helper function for setting sigma for rmvnorm
-  sigma_mat <- function(.x) {diag(.x, n_latent_dims)}
-
-  # SV model on the errors
-  eta_sd   <- sqrt(v / (1 - phi^2))     # eta.sd
-
-  u_sigma <- rmvnorm(1, mu, sigma_mat(eta_sd)) %>%
-    sigma_mat()
-
-  u <- rmvnorm(n, mu, u_sigma)
+  make_sigma_mat <- function(.x) diag(.x, n_latent_dims)
 
   # TODO: There's definitely something fishy with passing
   # the vector b into rgamma().
-
   b <- c(0.5 * (alpha_sigma - 1), 0.25 * (alpha_sigma - 1))
-  w_sigma <- 1 / rgamma(n_latent_dims, alpha_sigma, b) %>% sigma_mat()
 
-  w <- rmvnorm(n_pilot_vars, mu, w_sigma)
+  # Compute sigma and pipe into rmvnorm
+  u <- rnorm(n_latent_dims, mu, eta_sd)
+    make_sigma_mat() %>%
+    rmvnorm(n, mu, .)
 
+  # Compute sigma and pipe into rmvnorm
+  w <- (1 / rgamma(n_latent_dims, alpha_sigma, b)) %>%
+    make_sigma_mat() %>%
+    rmvnorm(n_pilot_vars, mu, .)
 
-  x_sigma <- exp(rnorm(1, 0, eta_sd)) %>% simga_mat()
-  x <- rmvnorm(n, mu, x_sigma) + tcrossprod(u, w)
+  # Compute sigma, pipe into rmvnorm and add crossprod
+  x <- exp(rnorm(1, 0, eta_sd)) %>%
+    make_simga_mat() %>%
+    rmvnorm(n, mu, .) + tcrossprod(u, w)
 
   return(x)
 }
