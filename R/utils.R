@@ -55,14 +55,13 @@ partition <- function(df, n, probs) {
 #' Computes pooled standard deviations and means
 #' from simulated samples
 #'
-#' @param x a numeric dataframe
-#' @param n_sims number of simulations
-#' @param n1 number of samples in treatment A
-#' @param n2 number of samples in treatment B
+#' @param x       a numeric dataframe
+#' @param n_sims  number of simulations
+#' @param n1      number of samples in treatment A
+#' @param n2      number of samples in treatment B
 #'
-#' @example
-#' # simulate 100 split samples of the iris dataset
-#' and compute
+#' @examples
+#' # simulate 100 split samples of the iris dataset and compute
 #' sample_dist(iris[-5], 100, 10, 9, 3)
 
 sample_dist <- function(x, n_sims, n1, n2, conf_idx){

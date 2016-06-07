@@ -3,13 +3,17 @@ Type: Package
 Title: Estimating Sample Sizes for Metabolomic Experiments
 Version: 1.2
 Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
-Description: An easy to use Graphical User Interface for estimating sample sizes required for metabolomic experiments even when experimental pilot data is not available.
+Description: An easy to use Graphical User Interface for estimating sample sizes
+    required for metabolomic experiments even when experimental pilot data is not
+    available.
 License: GPL (>= 2)
 LazyData: TRUE
 Imports:
     purrr,
     mvtnorm,
     MetabolAnalyze
-Suggests: testthat
+Suggests:
+    testthat
 URL: http://github.com/dandermotj/MetSizeR
 BugReports: http://github.com/dandermotj/MetSizeR/issues
+RoxygenNote: 5.0.1
