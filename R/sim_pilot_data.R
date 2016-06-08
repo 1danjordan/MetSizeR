@@ -61,8 +61,7 @@
 #' @param n_pilot_vars   number of variables in the pilot data
 #' @param n_latent_dims  number of latent dimension
 
-sim_DPPCA_data_with_pilot <- function(n, n_pilot_vars,
-                                      n_latent_dims){
+sim_pilo_DPPCA <- function(n, n_pilot_vars, n_latent_dims) {
 
   v       <- 0.1                       # v2.true
   phi     <- 0.8                       # phi.true
