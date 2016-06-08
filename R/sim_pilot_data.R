@@ -24,15 +24,15 @@ sim_PPCA_data_with_pilot <- function(n, ppca_obj, pilot_var_means) {
   u <- rmvnorm(n, rep(0, n_latent_dims), diag(n_latent_dims))
 
   x <- rmvnorm(n, rep(0, n_pilot_vars), diag(ppca_obj$sig, n_pilot_vars)) +
-    tcrossprod(u, ppca_obj$loadings) +
-    matrix(pilot_var_means, n, n_pilot_vars, byrow=TRUE)
+         tcrossprod(u, ppca_obj$loadings) +
+         matrix(pilot_var_means, n, n_pilot_vars, byrow=TRUE)
 
   return(x)
 }
 
 #' Simulate data using PPCA model when pilot and covariate data present
 #'
-#' @param n_samps             number of simulated samples
+#' @param n                   number of simulated samples
 #' @param ppcca_obj           the results from \code{ppcca.metabol}
 #' @param pilot_var_means     the means of the pilot data variables
 #'
@@ -76,8 +76,20 @@ sim_PPCCA_data_with_pilot <- function(n, ppcca_obj, pilot_var_means) {
 
 #' Simulate data using DPPCA model when pilot and covariate data present
 #'
+#'@param n                  number of simulated samples
+#'@param ppca_obj           the results from \code{ppca.metabol}
 #'
+#' @examples
+#' # Simulate 100 samples using the DPPCA model with pilot data
+#' # using the Urine Spectra dataset
 #'
+#' library(MetabolAnalyze)
+#' data(UrineSpectra)
+#'
+#' pilot_data <- UrineSpectra[[1]]
+#' ppca_fit <- ppca.metabol(pilot_data, minq = 2, maxq = 2)
+#'
+#' sim_DPPCA_data_with_pilot(100, ppca_fit)
 
 sim_DPPCA_with_pilot <- function(n, ppca_obj) {
 
@@ -90,17 +102,19 @@ sim_DPPCA_with_pilot <- function(n, ppca_obj) {
 
   n_pilot_vars  <- nrow(ppca_obj$loadings)
   n_latent_dims <- ncol(ppca_obj$loadings)
-  # zero vector for rmvnorm mean arg
   mu <- rep(0, n_latent_dims)
+
   rmvnorm_fun <- partial(rmvnorm, method = "svd")
 
   u <- rnorm(n_latent_dims, mu, eta_sd) %>%
     diag(n_latent_dims) %>%
     rmvnorm_fun(n, mu, .)
 
+  # No pilot_var_means added like in the other models?
   x <- exp(rnorm(1, 0, eta_sd)) %>%
     diag(n_pilot_vars) %>%
-    rmvnorm_fun(n, rep(0, n_pilot_vars), .) + tcrossprod(u, ppca_obj$loadings)
+    rmvnorm_fun(n, rep(0, n_pilot_vars), .) +
+      tcrossprod(u, ppca_obj$loadings)
 
   return(x)
 }

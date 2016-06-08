@@ -1,7 +1,5 @@
 context("standardize")
 
-
-
 test_that("standardize outputs correctly", {
   x <- rnorm(10)
 
