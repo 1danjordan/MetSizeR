@@ -14,9 +14,9 @@
 #' pilot_data <- UrineSpectra[[1]]
 #' ppca_fit <- ppca.metabol(pilot_data, minq = 2, maxq = 2)
 #'
-#' sim_PPCA_data_with_pilot(100, ppca_fit, colMeans(pilot_data))
+#' sim_pilot_PPCA(100, ppca_fit, colMeans(pilot_data))
 
-sim_PPCA_data_with_pilot <- function(n, ppca_obj, pilot_var_means) {
+sim_pilot_PPCA <- function(n, ppca_obj, pilot_var_means) {
 
   n_pilot_vars  <- nrow(ppca_obj$loadings)
   n_latent_dims <- ncol(ppca_obj$loadings)
@@ -47,12 +47,12 @@ sim_PPCA_data_with_pilot <- function(n, ppca_obj, pilot_var_means) {
 #' covariates <- UrineSpectra[[2]][,2]
 #' ppcca_fit <- ppcca.metabol(pilot_data, covariates, minq = 2, maxq = 2)
 #'
-#' sim_PPCCA_data_with_pilot(100, ppcca_fit, colMeans(pilot_data))
+#' sim_PPCCA_pilot(100, ppcca_fit, colMeans(pilot_data))
 
 # Sampling 1 obs produces NaNs
 # returns matrix with dimnames (as a result of $loadings)
 
-sim_PPCCA_data_with_pilot <- function(n, ppcca_obj, pilot_var_means) {
+sim_PPCCA_pilot <- function(n, ppcca_obj, pilot_var_means) {
 
   n_pilot_vars  <- nrow(ppcca_obj$loadings)
   n_latent_dims <- ncol(ppcca_obj$loadings)
@@ -89,9 +89,9 @@ sim_PPCCA_data_with_pilot <- function(n, ppcca_obj, pilot_var_means) {
 #' pilot_data <- UrineSpectra[[1]]
 #' ppca_fit <- ppca.metabol(pilot_data, minq = 2, maxq = 2)
 #'
-#' sim_DPPCA_data_with_pilot(100, ppca_fit)
+#' sim_DPPCA_pilot(100, ppca_fit)
 
-sim_DPPCA_with_pilot <- function(n, ppca_obj) {
+sim_DPPCA_pilot <- function(n, ppca_obj) {
 
   v       <- 0.1                       # v2.true
   phi     <- 0.8                       # phi.true
