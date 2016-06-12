@@ -14,20 +14,22 @@
 #' pilot_data <- UrineSpectra[[1]]
 #' ppca_fit <- ppca.metabol(pilot_data, minq = 2, maxq = 2)
 #'
-#' sim_pilot_PPCA(100, ppca_fit, colMeans(pilot_data))
+#' sim_PPCA_pilot(100, ppca_fit, colMeans(pilot_data))
 
-sim_pilot_PPCA <- function(n, ppca_obj, pilot_var_means) {
+sim_PPCA_pilot <- function(n, ppca_obj, pilot_var_means) {
 
   n_pilot_vars  <- nrow(ppca_obj$loadings)
   n_latent_dims <- ncol(ppca_obj$loadings)
 
+  mu <- matrix(pilot_var_means, n, n_pilot_vars, byrow=TRUE)
+
+  w <- ppca_obj$loadings
+
   u <- rmvnorm(n, rep(0, n_latent_dims), diag(n_latent_dims))
 
-  x <- rmvnorm(n, rep(0, n_pilot_vars), diag(ppca_obj$sig, n_pilot_vars)) +
-         tcrossprod(u, ppca_obj$loadings) +
-         matrix(pilot_var_means, n, n_pilot_vars, byrow=TRUE)
+  x <- rmvnorm(n, rep(0, n_pilot_vars), diag(ppca_obj$sig, n_pilot_vars))
 
-  return(x)
+  return(x + tcrossprod(u, w) + mu)
 }
 
 #' Simulate data using PPCA model when pilot and covariate data present
@@ -58,6 +60,10 @@ sim_PPCCA_pilot <- function(n, ppcca_obj, pilot_var_means) {
   n_latent_dims <- ncol(ppcca_obj$loadings)
   n_covars      <- ncol(ppcca_obj$coefficients) - 1
 
+  mu <- matrix(pilot_var_means, n, n_pilot_vars, byrow = TRUE)
+
+  w <- ppcca_obj$loadings
+
   c <- rmvnorm(n, rep(0, n_covars), diag(n_covars)) %>%
     apply(2, standardize) %>%
     cbind(1, .)
@@ -65,11 +71,9 @@ sim_PPCCA_pilot <- function(n, ppcca_obj, pilot_var_means) {
   u <- rmvnorm(n, rep(0, n_latent_dims), diag(n_latent_dims)) +
     t(tcrossprod(ppcca_obj$coefficients, c))
 
-  x <- rmvnorm(n, rep(0, n_pilot_vars), diag(ppcca_obj$sig, n_pilot_vars)) +
-    tcrossprod(u, ppcca_obj$loadings) +
-    matrix(pilot_var_means, n, n_pilot_vars, byrow = TRUE)
+  x <- rmvnorm(n, rep(0, n_pilot_vars), diag(ppcca_obj$sig, n_pilot_vars))
 
-  return(x)
+  return(x + tcrossprod(u, w) + mu)
 
  }
 
@@ -99,24 +103,23 @@ sim_DPPCA_pilot <- function(n, ppca_obj) {
   alpha_sigma <- 5                     # ao | alpha.sigma <- ao <- 5
                                        # the scale parameter of the prior
                                        # distribution of the variance.
+  rmvnorm_fun <- partial(rmvnorm, method = "svd")
 
   n_pilot_vars  <- nrow(ppca_obj$loadings)
   n_latent_dims <- ncol(ppca_obj$loadings)
-  mu <- rep(0, n_latent_dims)
 
-  rmvnorm_fun <- partial(rmvnorm, method = "svd")
+  w <- ppca_obj$loadings
 
-  u <- rnorm(n_latent_dims, mu, eta_sd) %>%
+  u <- rnorm(n_latent_dims, rep(0, n_latent_dims), eta_sd) %>%
     diag(n_latent_dims) %>%
-    rmvnorm_fun(n, mu, .)
+    rmvnorm_fun(n, rep(0, n_latent_dims), .)
 
   # No pilot_var_means added like in the other models?
   x <- exp(rnorm(1, 0, eta_sd)) %>%
     diag(n_pilot_vars) %>%
-    rmvnorm_fun(n, rep(0, n_pilot_vars), .) +
-      tcrossprod(u, ppca_obj$loadings)
+    rmvnorm_fun(n, rep(0, n_pilot_vars), .)
 
-  return(x)
+  return(x + tcrossprod(u, w))
 }
 
 
