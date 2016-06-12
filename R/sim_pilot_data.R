@@ -1,4 +1,4 @@
-#' Simulate data using a PPCCA model when pilot data is present
+#' Simulate data using a PPCA model when pilot data is present
 #'
 #'@param n                  number of simulated samples
 #'@param ppca_obj           the results from \code{ppca.metabol}
@@ -32,7 +32,7 @@ sim_PPCA_pilot <- function(n, ppca_obj, pilot_var_means) {
   return(x + tcrossprod(u, w) + mu)
 }
 
-#' Simulate data using PPCA model when pilot and covariate data present
+#' Simulate data using PPCCA model when pilot and covariate data present
 #'
 #' @param n                   number of simulated samples
 #' @param ppcca_obj           the results from \code{ppcca.metabol}
