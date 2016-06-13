@@ -1,3 +1,31 @@
+
+#' Simulate data without pilot data using a PPCA model
+#'
+#' @param n                 the number of samples to be simulated
+#' @param n_spectral_bins   the number of spectral bins considered
+
+sim_PPCA <- function(n, n_spectral_bins) {
+
+  n_latent_vars <- 2
+
+  # the scale parameter of the prior distribution of the variance
+  alpha.sigma   <- 5
+  # the shape parameter of the prior distribution of the variance
+  beta.sigma    <- 2 * (alpha.sigma - 1)
+
+  bo <- c(0.5 * (alpha.sigma - 1), 0.25 * (alpha.sigma - 1))
+  sig <- 1 / rgamma(1, alpha.sigma, beta.sigma)
+
+  u <- rmvnorm(n, rep(0, n_latent_vars), diag(n_latent_vars))
+  v <- 1 / (rgamma(n_latent_vars, ao, bo))
+  w <- rmvnorm(n_spectral_bins, rep(0, n_latent_vars), diag(v))
+
+  x <- rmvnorm(n, rep(0, n_latent_vars), diag(n_latent_vars)) + tcrossprod(u, w)
+
+  return(x)
+}
+
+
 #' Simulate data for DPPCA without pilot data
 #'
 #' @param n              number of samples to be simulated

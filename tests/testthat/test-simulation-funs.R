@@ -1,4 +1,4 @@
-context("Test simulation functions")
+context("Test simulation functions work")
 
 library(MetabolAnalyze, quietly = TRUE)
 data(UrineSpectra)
@@ -10,7 +10,9 @@ n <- 100
 # they are all the same tests but I'm not sure how
 # to do it properly
 
-test_that("sim_PPCA_pilot outputs correctly", {
+
+
+test_that("sim_PPCA_pilot outputs correct dimensions and type", {
 
   ppca_fit <- ppca.metabol(pilot_data)
 
@@ -21,7 +23,7 @@ test_that("sim_PPCA_pilot outputs correctly", {
   expect_is(sims, "matrix")
 })
 
-test_that("sim_PPCCA_pilot outputs correctly", {
+test_that("sim_PPCCA_pilot outputs correct dimensions and type", {
 
   ppcca_fit <- ppcca.metabol(pilot_data, covariates)
 
@@ -32,7 +34,7 @@ test_that("sim_PPCCA_pilot outputs correctly", {
   expect_is(sims, "matrix")
 })
 
-test_that("sim_DPPCA_pilot outputs correctly", {
+test_that("sim_DPPCA_pilot outputs correct dimensions and type", {
 
   ppca_fit <- ppca.metabol(pilot_data)
 
