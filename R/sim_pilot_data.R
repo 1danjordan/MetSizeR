@@ -68,8 +68,7 @@ sim_PPCCA_pilot <- function(n, ppcca_obj, pilot_var_means) {
     apply(2, standardize) %>%
     cbind(1, .)
 
-  u <- rmvnorm(n, rep(0, n_latent_dims), diag(n_latent_dims)) +
-    t(tcrossprod(ppcca_obj$coefficients, c))
+  u <- rmvnorm(n, rep(0, n_latent_dims), diag(n_latent_dims)) + t(tcrossprod(ppcca_obj$coefficients, c))
 
   x <- rmvnorm(n, rep(0, n_pilot_vars), diag(ppcca_obj$sig, n_pilot_vars))
 
