@@ -1,7 +1,10 @@
 context("Test simulation functions work")
 
+# This should have library(MetSizeR) but I don't know which
+# package it will load: this one or the old one
+
 library(mvtnorm)
-library(purrr)
+library(purrr, warn.conflicts = FALSE)
 
 data(UrineSpectra, package = "MetabolAnalyze")
 pilot_data <- UrineSpectra[[1]]

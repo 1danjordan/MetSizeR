@@ -66,7 +66,7 @@ sim_PPCCA <- function(n, n_spectral_bins, n_covars) {
 #' @param n                the number of samples to be simulated
 #' @param n_spectral_bins  the number of spectral bins considered
 
-sim_DPPCA <- function(n, n_pilot_vars) {
+sim_DPPCA <- function(n, n_spectral_bins) {
 
   v       <- 0.1                       # v2.true
   phi     <- 0.8                       # phi.true
@@ -86,11 +86,11 @@ sim_DPPCA <- function(n, n_pilot_vars) {
 
   w <- (1 / rgamma(n_latent_dims, alpha.sigma, b)) %>%
     diag(n_latent_dims) %>%
-    rmvnorm_fun(n_pilot_vars, rep(0, n_latent_dims), .)
+    rmvnorm_fun(n_spectral_bins, rep(0, n_latent_dims), .)
 
   x <- exp(rnorm(1, 0, eta_sd)) %>%
-    diag(n_pilot_vars) %>%
-    rmvnorm_fun(n, rep(0, n_pilot_vars), .)
+    diag(n_spectral_bins) %>%
+    rmvnorm_fun(n, rep(0, n_spectral_bins), .)
 
   return(x + tcrossprod(u, w))
 
