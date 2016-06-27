@@ -107,15 +107,24 @@ est_sample_size <- function(results_sim, target.fdr) {
   return(est)
 }
 
-#' estimate the False Discovery Rate (FDR)
+#' Estimate the False Discovery Rate (FDR)
 #'
-#' @param test_stat
+#' This function takes the output of sample_dist, the resampled
+#' test statistics of simulated metabolomic data, and estimates
+#' the median false discovery rate according to some level of
+#' confidence \code{p_stat}.
+#'
+#' @param test_stat     a matrix (n x m)
+#' @param sd            a matrix (n x m)
+#' @param pilot         boolean indicating if pilot data is present
+#' @param sig_metabs    a vector indicating significant metabolites
+#' @param p_stat        level of confidence (0 < x < 1)
 
-estimate_fdr <- function(t_stat, sd, pilot, sig_metabs, p_stat){
+estimate_fdr <- function(t_stat, sd, sig_metabs, p_stat, pilot){
 
   delta <- ifelse(pilot, qnorm(0.99), qnorm(0.89))
-  ind <- matrix(FALSE, nrow = nrow(t_stat), ncol = ncol(tstat))
-  ind[, sig_metab] <- TRUE
+  ind <- matrix(FALSE, nrow = nrow(t_stat), ncol = ncol(t_stat))
+  ind[, sig_metabs] <- TRUE
 
   t_stat[sig_metabs] <- t_stat[sig_metabs] + (delta/sd)[sig_metabs]
 
@@ -125,7 +134,7 @@ estimate_fdr <- function(t_stat, sd, pilot, sig_metabs, p_stat){
   # number of false positives
   errors <- (colSums(abs_t_stat > crit & !ind)) / (colSums(abs_t_stat > crit))
 
-  # median FDR of the Tstar permutations
+  # median FDR
   quantile(errors[!is.na(errors)], 0.5)
 }
 
