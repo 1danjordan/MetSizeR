@@ -3,6 +3,8 @@
 #' @param model  a character vector of model to return
 #' @param pilot  an indicator that pilot data exists
 #'
+#' @return a closure
+#'
 #' @example
 #' # get PPCA simulator when pilot data is not present
 #' get_model_fun(model = "ppca")
@@ -102,56 +104,20 @@ est_sample_size <- function(results_sim, target.fdr) {
   # return the estimated sample sizes
   est <- c(nhat, n1, n2)
   names(est) <- c("n","n1","n2")
+  return(est)
 }
 
 #' estimate the False Discovery Rate (FDR)
 #'
 #' @param test_stat
 
-estimate_fdr <- function(sd, t_stat, pilot){
+estimate_fdr <- function(sd, t_stat, pilot, sig_metabs, n1, n2, p_stat){
 
   delta <- ifelse(pilot, qnorm(0.99), qnorm(0.89))
-  p <- length(sd)
-  pos <- sample(1:p, ceiling())
 
-  # We need to know p, which we can get from sd or t_stat
-  #
+  t_stat[sig_metabs] <- t_stat[sig_metabs] + (delta/sd)[sig_metabs]
 
-  Add <- delta / sd
-
-
-  pstat<-1-(mrange[m]/p)
-  ind <- matrix(FALSE, p, T)
-
-  ## different number significant metabolites
-  mrange<-ceiling(mprop*p)
-  ## sampling mrange[m] metabolites
-  pos <- sample(1:p, size=mrange[m])
-  ## matrix indicating truly significant and non significant metabolites
-  ind[pos,] <- TRUE
-
-
-  # 3D array?
-  Add <- array(NA, c(p,T,ntry))
-  Add.sd <- sqrt(in1n2)
-  in1n2 <- 1/n1star + 1/n2star
-
-
-  # calculating the shift in metabolites in grp 2
-  vars <- S / Add.sd
-  Add[,,k] <- delta / (vars * Add.sd)
-
-  # estimating the FDR
-  tsB <- TS
-
-  # Add an increment factor to the t.statistic values
-  # of the truly significant metabolites
-  tsB[pos,] <- tsB[pos,] + Add[pos,,k]
-  atsB <- abs(tsB)
-
-  # identifying a cut-off point (m-th largest absolute
-  # value of the p TsB values)
-  crit <- quantile(atsB, pstat)
+  crit <- quantile(abs(t_stat), p_stat)
 
   # number of false positives
   errors <- (colSums(atsB > crit & !ind)) / (colSums(atsB > crit))

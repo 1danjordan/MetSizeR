@@ -47,7 +47,6 @@ partition <- function(df, n, probs) {
 #' # variances and test statistics
 #' sample_dist(iris[-5], 100, 10, 9, 3)
 
-# corrected_sd function is breaking this
 sample_dist <- function(x, n_sims, n1, n2, conf_idx){
 
   probs <- c(A = n1, B = n2)
