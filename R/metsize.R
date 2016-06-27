@@ -111,19 +111,22 @@ est_sample_size <- function(results_sim, target.fdr) {
 #'
 #' @param test_stat
 
-estimate_fdr <- function(sd, t_stat, pilot, sig_metabs, n1, n2, p_stat){
+estimate_fdr <- function(t_stat, sd, pilot, sig_metabs, p_stat){
 
   delta <- ifelse(pilot, qnorm(0.99), qnorm(0.89))
+  ind <- matrix(FALSE, nrow = nrow(t_stat), ncol = ncol(tstat))
+  ind[, sig_metab] <- TRUE
 
   t_stat[sig_metabs] <- t_stat[sig_metabs] + (delta/sd)[sig_metabs]
 
-  crit <- quantile(abs(t_stat), p_stat)
+  abs_t_stat <- abs(t_stat)
+  crit <- quantile(abs_t_stat, p_stat)
 
   # number of false positives
-  errors <- (colSums(atsB > crit & !ind)) / (colSums(atsB > crit))
+  errors <- (colSums(abs_t_stat > crit & !ind)) / (colSums(abs_t_stat > crit))
 
   # median FDR of the Tstar permutations
-  fdr_sim[k,s] <- quantile(errors[!is.na(errors)], 0.5)
+  quantile(errors[!is.na(errors)], 0.5)
 }
 
 
