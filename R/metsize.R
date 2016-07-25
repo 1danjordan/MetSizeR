@@ -27,86 +27,6 @@ get_model_fun <- function(model, pilot = NULL) {
   }
 }
 
-
-#' Determine the sample size at which the FDR line is equal to 0.05
-#'
-#'
-#' @param sims    simulation of metabolites
-#' @param props
-
-# results_sim is a 4D matrix with dimensions:
-#  1 - number of increments
-#  2 - median FDR of resampled simulations
-#  3 - 90th percentile FDR of resampled simulations
-#  4 - 10th percentile FDR of resampled simulations
-
-# I genuinely feel like this is incorrect. It just isn't making
-# sense
-
-est_sample_size <- function(results_sim, target.fdr) {
-
-  # index 1
-  # this is the index of:
-  #  1 take all the rows
-  #  2 find the rows where the median FDR is less than 0.05
-  #  3 get them minimum row number
-  #  why get the minimum row number?...
-
-
-  ind1 <- min(c(1:nrow(results_sim))[results_sim[, 2] < 0.05])
-  # 1 ... ind1
-
-  # index 2
-  # this is the index where:
-  #   we take the result where the media FDR is greater than 0.05
-  #   then we find the index of all of them
-  #   the we get the highest index
-
-  ind2 <- max(c(1:ind1)[results_sim[1:ind1, 2] > 0.05])
-  # 1 ... ind2
-
-  # is this supposed to be some form of linear interpolation?
-  opty <- c(results_sim[ind1,2], results_sim[ind2,2])
-  optx <- c(results_sim[ind1,1], results_sim[ind2,1])
-
-  # linear model of opty on optx
-  optres <- lm(opty ~ optx)
-
-  # estimated sample size
-  nhat <- round((target.fdr - optres$coef[1])/optres$coef[2])
-
-  # error message
-  if(is.na(nhat)){print("Sorry: an error has occurred. Please rerun the function."); stop()}
-
-  # if sample sizes are the same
-  if(n1 == n2)
-  {
-    # if nhat is even
-    if(is.wholenumber(nhat/2)) {
-      n1 <- n2 <- nhat/2
-    } else {                # if nhat is not divisible by 2
-        nhat <- nhat + 1    # add one to make it even
-        n1 <- n2 <- nhat/2  # n1 and n2 are half that
-        }
-  } else {                  # if sample sizes are not the same
-    if(is.wholenumber(n1 * nhat / (n1 + n2))) { # n1 is whole number
-      n1 <- n1 * nhat / (n1 + n2)
-      n2 <- nhat - n1
-    } else {
-      n1.user <- n1
-      n2.user <- n2
-      n1 <- ceiling(n1.user * nhat / (n1.user + n2.user))
-      n2 <- ceiling(n2.user * nhat / (n1.user + n2.user))
-      nhat <- n1 + n2
-    }
-  }
-
-  # return the estimated sample sizes
-  est <- c(nhat, n1, n2)
-  names(est) <- c("n","n1","n2")
-  return(est)
-}
-
 #' Estimate the False Discovery Rate (FDR)
 #'
 #' This function takes the output of sample_dist, the resampled
@@ -119,6 +39,8 @@ est_sample_size <- function(results_sim, target.fdr) {
 #' @param pilot         boolean indicating if pilot data is present
 #' @param sig_metabs    a vector indicating significant metabolites
 #' @param p_stat        level of confidence (0 < x < 1)
+#'
+#' @return              the median false discovery rate (numeric)
 
 estimate_fdr <- function(t_stat, sd, sig_metabs, p_stat, pilot){
 
@@ -138,11 +60,78 @@ estimate_fdr <- function(t_stat, sd, sig_metabs, p_stat, pilot){
   quantile(errors[!is.na(errors)], 0.5)
 }
 
+#' Compute the number of samples required for each treatment group
+#'
+#' This function takes an estimated sample size and the number
+#' of samples in each treatment from a pilot experiment and computes
+#' the required treatment size for an experiment.
+#'
+#' @param nhat  the sample size required for an experiment
+#' @param n1    the size of the sample in group 1 of the pilot
+#' @param n2    the size of the sample in group 2 of the pilot
+#'
+#' @return      a named list
 
 
+compute_treatment_sizes <- function(nhat, n1, n2) {
 
+  is_whole <- function(x) { x%%1 == 0 }
 
+  if (is.na(nhat)) {
+    print("Sorry: an error has occurred. Please rerun the function.")
+    stop()
+  }
 
+  # if sample sizes are the same
+  if(n1 == n2) {
+    # if nhat is even
+    if(is_whole(nhat / 2)) {
+      treatment_1 <- nhat / 2
+      treatment_2 <- nhat / 2
+    } else {              # if nhat is not divisible by 2
+      treatment_1 <- (nhat + 1) / 2        # n1 and n2 are half that
+      treatment_2 <- (nhat + 1) / 2
+    }
+  } else {                # if sample sizes are not the same
+    if(is_whole(n1 * nhat / (n1 + n2))) {
+      treatment_1 <- n1 * nhat / (n1 + n2)
+      treatment_2 <- nhat - n1
+    } else {
+      treatment_1 <- ceiling(n1 * nhat / (n1 + n2))
+      treatment_2 <- ceiling(n2 * nhat / (n1 + n2))
+      nhat <- n1 + n2
+    }
+
+    return(list(samples = nhat,
+                treatment_1 = treatment_1,
+                treatment_2 = treatment_2))
+  }
+}
+
+#' Determine the sample size at which the FDR line is equal to 0.05
+#'
+#'
+#' @param
+#' @param target_fdr  the target false discovery rate
+#' @param n1
+#' @param n2
+
+est_sample_size <- function(results_sim, target_fdr, n1, n2) {
+
+  upp_bound <- results_sim %>%
+    filter(median_fdr < 0.05) %>%
+    slice(which.min(n_samps))
+
+  low_bound <- results_sim %>%
+    filter(median_fdr > 0.05) %>%
+    slice(which.max(n_samps))
+
+  lin_approx <- lm(median_fdr ~ n_samps, data = bind_rows(upp_bound, low_bound))
+  nhat <- round((target_fdr - lin_approx$coef[1]) / lin_approx$coef[2])
+
+  return(compute_treatment_sizes(nhat, n1, n2))
+
+}
 
 
 

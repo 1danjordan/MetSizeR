@@ -10,10 +10,12 @@ License: GPL (>= 2)
 LazyData: TRUE
 Imports:
     purrr,
+    dplyr,
     mvtnorm,
     MetabolAnalyze
 Suggests:
     testthat
+    shiny
 URL: http://github.com/dandermotj/MetSizeR
 BugReports: http://github.com/dandermotj/MetSizeR/issues
 RoxygenNote: 5.0.1
