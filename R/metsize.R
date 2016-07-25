@@ -84,53 +84,55 @@ compute_treatment_sizes <- function(nhat, n1, n2) {
 
   # if sample sizes are the same
   if(n1 == n2) {
-    # if nhat is even
-    if(is_whole(nhat / 2)) {
+    if(is_whole(nhat / 2)) {          # if nhat is even
       treatment_1 <- nhat / 2
       treatment_2 <- nhat / 2
-    } else {              # if nhat is not divisible by 2
-      treatment_1 <- (nhat + 1) / 2        # n1 and n2 are half that
+    } else {                          # if nhat is uneven
+      treatment_1 <- (nhat + 1) / 2
       treatment_2 <- (nhat + 1) / 2
     }
-  } else {                # if sample sizes are not the same
+  } else {                            # if sample sizes are not the same
     if(is_whole(n1 * nhat / (n1 + n2))) {
       treatment_1 <- n1 * nhat / (n1 + n2)
       treatment_2 <- nhat - n1
     } else {
       treatment_1 <- ceiling(n1 * nhat / (n1 + n2))
       treatment_2 <- ceiling(n2 * nhat / (n1 + n2))
-      nhat <- n1 + n2
-    }
 
-    return(list(samples = nhat,
-                treatment_1 = treatment_1,
-                treatment_2 = treatment_2))
+    }
   }
+
+  return(list(
+    samples = treatment_1 + treatment_2,
+    treatment_1 = treatment_1,
+    treatment_2 = treatment_2))
 }
 
 #' Determine the sample size at which the FDR line is equal to 0.05
 #'
-#'
-#' @param
+#' @param df          a data frame of sample sizes and False Discovery Rates
 #' @param target_fdr  the target false discovery rate
-#' @param n1
-#' @param n2
+#' @param n1          the number of samples in treatment 1 of pilot
+#' @param n2          the number of samples in treatment 2 of pilot
+#'
+#' @result            a named list
 
-est_sample_size <- function(results_sim, target_fdr, n1, n2) {
+est_sample_size <- function(df, target_fdr, n1, n2) {
 
-  upp_bound <- results_sim %>%
-    filter(median_fdr < 0.05) %>%
+  upp_bound <- df %>%
+    filter(fdr < 0.05) %>%
     slice(which.min(n_samps))
 
-  low_bound <- results_sim %>%
-    filter(median_fdr > 0.05) %>%
+  low_bound <- df %>%
+    filter(fdr > 0.05) %>%
     slice(which.max(n_samps))
 
-  lin_approx <- lm(median_fdr ~ n_samps, data = bind_rows(upp_bound, low_bound))
+  lin_approx <- lm(fdr ~ n_samps, data = bind_rows(upp_bound, low_bound))
   nhat <- round((target_fdr - lin_approx$coef[1]) / lin_approx$coef[2])
 
+  # Remove "(Intercept)" attr
+  nhat <- unname(nhat)
   return(compute_treatment_sizes(nhat, n1, n2))
-
 }
 
 

@@ -14,7 +14,7 @@ Imports:
     mvtnorm,
     MetabolAnalyze
 Suggests:
-    testthat
+    testthat,
     shiny
 URL: http://github.com/dandermotj/MetSizeR
 BugReports: http://github.com/dandermotj/MetSizeR/issues
